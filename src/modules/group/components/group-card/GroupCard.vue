@@ -10,13 +10,13 @@ const emit = defineEmits<{ open: [] }>()
 </script>
 
 <template>
-  <Card clickable @click="emit('open')">
+  <Card clickable @click="emit('open')" class="max-w-140">
     <CardBody class="p-8">
       <div class="flex items-center gap-4">
         <div class="bg-bg-base p-6 rounded-md">
           <HouseIcon :size="24" :stroke-width="2" />
         </div>
-        <div>
+        <div class="min-w-0 flex-1">
           <Typography size="md" weight="semibold">{{ group.name }}</Typography>
           <AvatarStack :avatar-urls="group.memberAvatarUrls" size="xs" />
         </div>

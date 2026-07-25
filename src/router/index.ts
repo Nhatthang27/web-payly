@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/shared/stores/auth.store'
 import authRoutes from '@/modules/auth/router'
+import homeRoutes from '@/modules/home/router'
 import groupRoutes from '@/modules/group/router'
 import groupMemberRoutes from '@/modules/group-member/router'
 import expenseRoutes from '@/modules/expense/router'
@@ -10,6 +11,7 @@ import storybookRoutes from '@/modules/storybook/router'
 
 const routes = [
   ...authRoutes,
+  ...homeRoutes,
   ...groupRoutes,
   ...groupMemberRoutes,
   ...expenseRoutes,
@@ -29,7 +31,7 @@ router.beforeEach(async (to) => {
   if (!auth.initialized) await auth.init()
 
   if (to.path === '/') {
-    return auth.isAuthenticated ? '/groups' : '/sign-in'
+    return auth.isAuthenticated ? '/home' : '/sign-in'
   }
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
@@ -37,7 +39,7 @@ router.beforeEach(async (to) => {
   }
 
   if (to.path === '/sign-in' && auth.isAuthenticated) {
-    return '/groups'
+    return '/home'
   }
 })
 

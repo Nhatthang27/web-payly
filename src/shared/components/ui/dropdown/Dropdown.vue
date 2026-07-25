@@ -40,7 +40,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 
 const panelClass = computed(() =>
   cn(
-    'absolute z-50 flex min-w-[10rem] flex-col gap-3 rounded-md border border-border bg-bg-elevated p-sm shadow-md',
+    'absolute z-50 flex min-w-[10rem] flex-col gap-3 rounded-md border border-border-secondary bg-bg-elevated p-sm shadow-md',
     props.placement === 'bottom-start' && 'top-full left-0 mt-1',
     props.placement === 'bottom-end' && 'top-full right-0 mt-1',
     props.placement === 'top-start' && 'bottom-full left-0 mb-1',

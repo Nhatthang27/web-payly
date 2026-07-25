@@ -2,9 +2,9 @@ import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/groups/:id',
-    name: 'GroupDetail',
-    component: () => import('./views/GroupDetailView.vue'),
+    path: '/home',
+    name: 'Home',
+    component: () => import('./views/HomeView.vue'),
     meta: { requiresAuth: true },
   },
 ]

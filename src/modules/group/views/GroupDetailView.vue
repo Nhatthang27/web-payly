@@ -27,7 +27,7 @@ const handleTabSelect = (tab: GroupMenuKeys) => {
 const sidebarOpen = ref(false)
 
 const handleBack = () => {
-  router.push('/groups')
+  router.push('/home')
 }
 
 onMounted(() => {

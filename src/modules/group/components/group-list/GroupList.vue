@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/shared/stores/auth.store'
 import { useGroupList } from '@/modules/group/composables/useGroupList'
-import AppHeader from '@/shared/components/app/AppHeader.vue'
-import UserAvatar from '@/shared/components/ui/Avatar.vue'
 import GroupCard from '@/modules/group/components/group-card/GroupCard.vue'
 import GroupCardSkeleton from '@/modules/group/components/group-card/GroupCardSkeleton.vue'
 import GroupCreateModal from '@/modules/group/components/group-create-modal/GroupCreateModal.vue'
@@ -13,11 +10,8 @@ import { HousePlus } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import type { Group } from '@/modules/group/types/group.types'
 import { GROUP_MESSAGES } from '@/modules/group/components/group-detail/group-detail.constants'
-import Typography from '@/shared/components/ui/typography/Typography.vue'
-import Button from '@/shared/components/ui/Button.vue'
 
 const router = useRouter()
-const auth = useAuthStore()
 const groups = useGroupList()
 const showCreateModal = ref(false)
 
@@ -37,35 +31,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <AppHeader>
-    <template #left>
-      <div class="flex items-center">
-        <Button variant="ghost" @click="router.push('/profile')">
-          <UserAvatar
-            :src="auth.profile?.avatarUrl ?? auth.user?.user_metadata?.avatar_url"
-            :name="auth.profile?.fullName ?? auth.user?.email"
-            size="md"
-          />
-        </Button>
-        <Typography weight="bold" size="lg">Nhóm của bạn</Typography>
-      </div>
+  <main class="groups-grid">
+    <template v-if="groups.isPending.value">
+      <GroupCardSkeleton v-for="i in 6" :key="i" />
     </template>
-  </AppHeader>
-
-  <main class="p-sm py-md">
-    <div class="groups-grid">
-      <template v-if="groups.isPending.value">
-        <GroupCardSkeleton v-for="i in 6" :key="i" />
-      </template>
-      <template v-else>
-        <GroupCard
-          v-for="group in groups.data.value"
-          :key="group.id"
-          :group="group"
-          @open="router.push(`/groups/${group.id}`)"
-        />
-      </template>
-    </div>
+    <template v-else>
+      <GroupCard
+        v-for="group in groups.data.value"
+        :key="group.id"
+        :group="group"
+        @open="router.push(`/groups/${group.id}`)"
+      />
+    </template>
   </main>
 
   <AppFab :icon="HousePlus" aria-label="Tạo nhóm mới" @click="showCreateModal = true" />
@@ -87,13 +64,13 @@ onMounted(() => {
 
 @media (min-width: 768px) {
   .groups-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
   .groups-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(6, 1fr);
   }
 }
 </style>
