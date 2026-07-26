@@ -17,7 +17,7 @@ const { currency, locale } = useAppSettingStore()
 const latestActivity = computed(() => pickLatestGroupActivity(props.activity))
 
 const AMOUNT_COLOR: Record<GroupActivityKind, TypographyColor> = {
-  expense: 'success',
+  expense: 'danger',
   debt: 'danger',
   settlementPaid: 'danger',
   settlementReceived: 'success',

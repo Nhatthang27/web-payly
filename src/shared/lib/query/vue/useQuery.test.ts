@@ -2,14 +2,14 @@
 import { describe, it, expect, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
-import { QueryClient, type QueryOptions } from '../core'
+import { QueryClient } from '../core'
 import { deferred } from '@/shared/utils/promise.util'
 import { provideQueryClient } from './useQueryClient'
-import { useQuery } from './useQuery'
+import { useQuery, type UseQueryOptions } from './useQuery'
 
 // Mounts useQuery inside a child whose ancestor provides the client, so
 // inject() and onScopeDispose() run in a real component context.
-function mountQuery<TData>(client: QueryClient, options: QueryOptions<TData>) {
+function mountQuery<TData>(client: QueryClient, options: UseQueryOptions<TData>) {
   let api!: ReturnType<typeof useQuery<TData>>
   const Child = defineComponent({
     setup() {
@@ -29,17 +29,34 @@ function mountQuery<TData>(client: QueryClient, options: QueryOptions<TData>) {
 }
 
 describe('useQuery', () => {
-  it('is idle with no data when nothing is cached for the key', () => {
+  it('is idle with no data when disabled and nothing is cached for the key', () => {
     const client = new QueryClient()
+    // enable: false — a default-enabled query auto-fetches on mount (see below),
+    // which would immediately flip status to 'pending' and defeat this assertion.
     const { api } = mountQuery(client, {
       queryKey: ['none'],
       queryFn: () => Promise.resolve('x'),
+      enable: false,
     })
 
     expect(api.status.value).toBe('idle')
     expect(api.data.value).toBeNull()
     expect(api.error.value).toBeNull()
     expect(api.isPending.value).toBe(false)
+  })
+
+  it('automatically fetches on mount when enabled (the default) and nothing is cached', async () => {
+    const client = new QueryClient()
+    const { api } = mountQuery(client, {
+      queryKey: ['auto'],
+      queryFn: () => Promise.resolve('x'),
+    })
+
+    // The initial `enable` watcher fires synchronously during setup.
+    expect(api.status.value).toBe('pending')
+
+    await vi.waitFor(() => expect(api.status.value).toBe('success'))
+    expect(api.data.value).toBe('x')
   })
 
   it('initializes from already-cached state', async () => {
@@ -92,11 +109,13 @@ describe('useQuery', () => {
     const client = new QueryClient()
     const queryFn = vi.fn().mockResolvedValue('shared')
     const a = mountQuery(client, { queryKey: ['s'], queryFn })
-    const b = mountQuery(client, { queryKey: ['s'], queryFn })
+    // enable: false — b must never fetch on its own (auto or manual); it should
+    // only ever observe the cache through its subscription.
+    const b = mountQuery(client, { queryKey: ['s'], queryFn, enable: false })
 
-    await a.api.query()
+    await vi.waitFor(() => expect(a.api.isSuccess.value).toBe(true))
 
-    // b never called query() but sees the cache update through its subscription
+    // b never fetched, but sees a's auto-fetch result through its subscription
     expect(b.api.data.value).toBe('shared')
     expect(b.api.isSuccess.value).toBe(true)
     expect(queryFn).toHaveBeenCalledTimes(1)

@@ -3,7 +3,7 @@ import { hashQueryKey, type QueryKey, type QueryState } from '../core'
 import { useQueryClient } from './useQueryClient'
 import type { QueryFunction } from '../core/query.type'
 
-type UseQueryOptions<TData> = {
+export type UseQueryOptions<TData> = {
   queryKey: MaybeRefOrGetter<QueryKey>
   queryFn: QueryFunction<TData>
   enable?: MaybeRefOrGetter<boolean>
