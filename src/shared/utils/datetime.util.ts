@@ -72,6 +72,16 @@ export function formatRelativeDateLabel(value: DateInput, locale: SupportedLocal
   return label
 }
 
+export function getGreeting(date: Date = new Date()): string {
+  const hour = date.getHours()
+
+  if (hour < 5) return 'Chào buổi tối'
+  if (hour < 11) return 'Chào buổi sáng'
+  if (hour < 13) return 'Chào buổi trưa'
+  if (hour < 18) return 'Chào buổi chiều'
+  return 'Chào buổi tối'
+}
+
 function getLocalDayDiff(from: Date, to: Date): number {
   const fromStart = startOfLocalDay(from)
   const toStart = startOfLocalDay(to)

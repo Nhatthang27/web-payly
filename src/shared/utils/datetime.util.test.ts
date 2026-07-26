@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { formatDate, formatRelativeDateLabel, getToday } from './datetime.util'
+import { formatDate, formatRelativeDateLabel, getGreeting, getToday } from './datetime.util'
 
 // Build the reference instant from LOCAL components: formatDate also formats in
 // the runtime's local timezone, so the two cancel out and assertions stay
@@ -103,5 +103,35 @@ describe('formatRelativeDateLabel', () => {
 
   it('returns an empty string for an invalid date', () => {
     expect(formatRelativeDateLabel('not-a-date', 'vi-VN')).toBe('')
+  })
+})
+
+describe('getGreeting', () => {
+  it('returns the morning greeting between 05:00 and 10:59', () => {
+    expect(getGreeting(new Date(2026, 4, 10, 5, 0))).toBe('Chào buổi sáng')
+    expect(getGreeting(new Date(2026, 4, 10, 10, 59))).toBe('Chào buổi sáng')
+  })
+
+  it('returns the noon greeting between 11:00 and 12:59', () => {
+    expect(getGreeting(new Date(2026, 4, 10, 11, 0))).toBe('Chào buổi trưa')
+    expect(getGreeting(new Date(2026, 4, 10, 12, 59))).toBe('Chào buổi trưa')
+  })
+
+  it('returns the afternoon greeting between 13:00 and 17:59', () => {
+    expect(getGreeting(new Date(2026, 4, 10, 13, 0))).toBe('Chào buổi chiều')
+    expect(getGreeting(new Date(2026, 4, 10, 17, 59))).toBe('Chào buổi chiều')
+  })
+
+  it('returns the evening greeting between 18:00 and 04:59', () => {
+    expect(getGreeting(new Date(2026, 4, 10, 18, 0))).toBe('Chào buổi tối')
+    expect(getGreeting(new Date(2026, 4, 10, 23, 59))).toBe('Chào buổi tối')
+    expect(getGreeting(new Date(2026, 4, 10, 4, 59))).toBe('Chào buổi tối')
+  })
+
+  it('defaults to the current time when no date is given', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 4, 10, 8, 0))
+    expect(getGreeting()).toBe('Chào buổi sáng')
+    vi.useRealTimers()
   })
 })

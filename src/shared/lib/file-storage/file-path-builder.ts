@@ -11,3 +11,9 @@ function uniqueFileName(file: File): string {
 export function buildSettlementEvidencePath(userId: string, file: File) {
   return `settlement-evidences/${userId}/${uniqueFileName(file)}`
 }
+
+// Keyed by the uploading user, not the expense: the evidence image is uploaded
+// while the expense form is being filled in, before the expense itself exists.
+export function buildExpenseEvidencePath(userId: string, file: File) {
+  return `expense-evidences/${userId}/${uniqueFileName(file)}`
+}

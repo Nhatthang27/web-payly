@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGroupList } from '@/modules/group/composables/useGroupList'
+import { useGroupActivities } from '@/modules/group/composables/useGroupActivities'
 import GroupCard from '@/modules/group/components/group-card/GroupCard.vue'
 import GroupCardSkeleton from '@/modules/group/components/group-card/GroupCardSkeleton.vue'
 import GroupCreateModal from '@/modules/group/components/group-create-modal/GroupCreateModal.vue'
@@ -13,6 +14,8 @@ import { GROUP_MESSAGES } from '@/modules/group/components/group-detail/group-de
 
 const router = useRouter()
 const groups = useGroupList()
+const activities = useGroupActivities()
+const activityByGroupId = computed(() => new Map(activities.data.value?.map((a) => [a.groupId, a])))
 const showCreateModal = ref(false)
 
 function handleCreateSuccess(group: Group) {
@@ -40,6 +43,7 @@ onMounted(() => {
         v-for="group in groups.data.value"
         :key="group.id"
         :group="group"
+        :activity="activityByGroupId.get(group.id)"
         @open="router.push(`/groups/${group.id}`)"
       />
     </template>
@@ -59,18 +63,18 @@ onMounted(() => {
 .groups-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--spacing-md);
+  gap: var(--spacing-xs);
 }
 
 @media (min-width: 768px) {
   .groups-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
   .groups-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 </style>

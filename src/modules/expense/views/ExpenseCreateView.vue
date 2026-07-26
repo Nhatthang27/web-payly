@@ -13,6 +13,7 @@ import { useCreateExpense } from '@/modules/expense/composables/useCreateExpense
 import { useSplitExpense } from '../composables/useSplitExpense'
 import { useExpenseParticipants } from '../composables/useExpenseParticipant'
 import ExpenseCreateHeader from '../components/expense-create/ExpenseCreateHeader.vue'
+import UploadExpenseEvidence from '../components/upload-expense-evidence/UploadExpenseEvidence.vue'
 import { useAppSettingStore } from '@/shared/stores/app-setting.store.ts'
 import Label from '@/shared/components/ui/Label.vue'
 import MoneyInput from '@/shared/components/ui/MoneyInput.vue'
@@ -76,6 +77,7 @@ const onSubmit = handleCreateExpense(async (values) => {
 
 const showPayerPicker = ref(false)
 const showPayeePicker = ref(false)
+const evidencePaths = ref<string[]>([])
 
 watch(
   splits,
@@ -107,6 +109,10 @@ onMounted(() => fetchMembers())
         <Label>Tên khoản chi</Label>
         <Input v-model="title" size="sm" variant="filled" placeholder="Poisidon thượng hạn" />
         <p v-if="errors.title" class="mt-1 px-1 text-xs text-danger-main">{{ errors.title }}</p>
+      </div>
+      <div>
+        <Label>Hóa đơn (không bắt buộc)</Label>
+        <UploadExpenseEvidence v-model:paths="evidencePaths" />
       </div>
 
       <PayerSelectRow :payer="payer" @click="showPayerPicker = true" />

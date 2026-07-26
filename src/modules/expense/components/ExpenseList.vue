@@ -27,7 +27,7 @@ onMounted(() => fetchExpenses())
 
 <template>
   <Typography size="md" weight="semibold" class="p-sm" as="div">Khoản chi</Typography>
-  <div class="flex flex-col gap-sm px-sm">
+  <div class="flex flex-col gap-sm px-sm mb-4">
     <template v-if="isPending">
       <ExpenseCardSkeleton v-for="i in 4" :key="i" />
     </template>

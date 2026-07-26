@@ -5,6 +5,7 @@ import { useAuthStore } from '@/shared/stores/auth.store'
 import { expenseListKey } from '@/modules/expense/composables/useExpenseList'
 import { debtListKey } from '@/modules/expense/composables/useDebtList'
 import { settlementListKey } from './useSettlementList'
+import { groupActivitiesKey } from '@/modules/group/composables/useGroupActivities'
 
 export interface SettleDebtsRequest {
   groupId: string
@@ -27,6 +28,7 @@ export function useSettleDebts() {
       queryClient.invalidateQuery(debtListKey(payload.groupId, userId))
       queryClient.invalidateQuery(expenseListKey(payload.groupId, userId))
       queryClient.invalidateQuery(settlementListKey(payload.groupId, userId))
+      queryClient.invalidateQuery(groupActivitiesKey(userId))
       payload.expenseIds.forEach((expenseId) => {
         queryClient.invalidateQuery(['debt-detail', expenseId, userId])
       })

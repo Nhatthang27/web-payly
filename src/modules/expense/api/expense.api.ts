@@ -1,4 +1,6 @@
 import { supabase } from '@/shared/lib/supabase'
+import { uploadFile } from '@/shared/lib/file-storage/supabase-file-storage.service'
+import { buildExpenseEvidencePath } from '@/shared/lib/file-storage/file-path-builder'
 import type { QueryData } from '@supabase/supabase-js'
 import type { Json } from '@/shared/lib/database.types'
 import type { SplitConfig, SplitMethod } from '@/modules/expense/types/expense-split.type'
@@ -167,5 +169,15 @@ export const expenseApi = {
     })
     if (error) throw error
     return data
+  },
+
+  /**
+   * Uploads a receipt/evidence image for an expense being created, grouped under
+   * the uploading user's own folder since the expense itself doesn't exist yet.
+   * @returns the storage path (private-bucket, not a URL).
+   */
+  async uploadExpenseEvidence(userId: string, file: File): Promise<string> {
+    const { path } = await uploadFile(file, buildExpenseEvidencePath(userId, file), 'expenseEvidence')
+    return path
   },
 }

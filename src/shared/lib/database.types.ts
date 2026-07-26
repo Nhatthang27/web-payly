@@ -281,6 +281,28 @@ export type Database = {
         }
         Returns: string
       }
+      get_group_activities: {
+        Args: { p_user_id: string }
+        Returns: {
+          group_id: string
+          latest_debt_amount: number
+          latest_debt_at: string
+          latest_debt_expense_id: string
+          latest_debt_title: string
+          latest_expense_amount: number
+          latest_expense_at: string
+          latest_expense_id: string
+          latest_expense_title: string
+          latest_settlement_paid_amount: number
+          latest_settlement_paid_at: string
+          latest_settlement_paid_id: string
+          latest_settlement_paid_title: string
+          latest_settlement_received_amount: number
+          latest_settlement_received_at: string
+          latest_settlement_received_id: string
+          latest_settlement_received_title: string
+        }[]
+      }
       get_group_member_balances: {
         Args: { p_from?: string; p_group_id: string; p_to?: string }
         Returns: {

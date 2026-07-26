@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue'
+import { computed, useAttrs, type HTMLAttributes } from 'vue'
 import { cn } from '@/shared/utils/cn.util'
 import type {
   TypographyAs,
@@ -19,6 +19,8 @@ const props = withDefaults(
     align?: TypographyAlign
     truncate?: boolean
     lineClamp?: 1 | 2 | 3
+    /** Consumer classes (e.g. positioning/spacing) — merged in via cn(). */
+    class?: HTMLAttributes['class']
   }>(),
   {
     as: 'span',
@@ -51,8 +53,8 @@ const weightClasses = {
 
 const colorClasses = {
   main: 'text-text',
-  muted: 'text-secondary',
-  disabled: 'text-disabled',
+  muted: 'text-text-secondary',
+  disabled: 'text-text-disabled',
   danger: 'text-error',
   success: 'text-success',
   inherit: 'text-inherit',
@@ -78,7 +80,7 @@ const typographyClass = computed(() =>
     alignClasses[props.align],
     props.truncate && 'truncate',
     props.lineClamp && lineClampClasses[props.lineClamp],
-    attrs.class as string,
+    props.class,
   ),
 )
 </script>
