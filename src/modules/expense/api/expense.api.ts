@@ -86,7 +86,7 @@ const EXPENSE_EDIT_SELECT = `id, title, amount, paid_by, split_method, split_con
 function expenseEditDataQuery(expenseId: string, userId: string) {
   return supabase.from('expenses').select(EXPENSE_EDIT_SELECT).eq('id', expenseId).eq('paid_by', userId).maybeSingle()
 }
-type ExpenseEditRow = QueryData<ReturnType<typeof expenseEditDataQuery>>[number]
+type ExpenseEditRow = NonNullable<QueryData<ReturnType<typeof expenseEditDataQuery>>>
 
 /** The current user's shares of expenses someone else paid ("Khoản nợ"), with the payer embedded. */
 function owedDebtsQuery(groupId: string, userId: string) {
