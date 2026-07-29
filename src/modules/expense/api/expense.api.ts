@@ -26,6 +26,32 @@ export interface CreateExpenseRequest {
   splits: ExpenseSplitInput[]
 }
 
+export interface UpdateExpenseRequest {
+  expenseId: string
+  groupId: string
+  title: string
+  /** Total expense amount; must equal the sum of the split shares. */
+  amount: number
+  /** User id of the payer (who fronted the money). */
+  paidBy: string
+  /** How the total was divided. */
+  splitMethod: SplitMethod
+  /** Method-specific config (percentages / custom amounts) persisted for later edits. */
+  splitConfig: SplitConfig
+  splits: ExpenseSplitInput[]
+}
+
+/** Full editable state of an expense — unlike `PaidExpense`, keeps the payer's own split and the raw split config. */
+export interface ExpenseEditData {
+  id: string
+  title: string
+  amount: number
+  paidBy: string
+  splitMethod: SplitMethod
+  splitConfig: SplitConfig
+  splits: ExpenseSplitInput[]
+}
+
 /** A split is settled once it points at a settlement; otherwise it's still owed. */
 function shareStatus(settlementId: string | null): SettlementStatus {
   return settlementId ? 'paid' : 'pending'
@@ -52,6 +78,15 @@ type PaidExpenseRow = QueryData<ReturnType<typeof paidExpensesQuery>>[number]
 function paidExpenseDetailQuery(expenseId: string, userId: string) {
   return supabase.from('expenses').select(PAID_EXPENSE_SELECT).eq('id', expenseId).eq('paid_by', userId).maybeSingle()
 }
+
+const EXPENSE_EDIT_SELECT = `id, title, amount, paid_by, split_method, split_config,
+   expense_splits ( user_id, share_amount )` as const
+
+/** The full editable state of one of the current user's paid expenses, by id. */
+function expenseEditDataQuery(expenseId: string, userId: string) {
+  return supabase.from('expenses').select(EXPENSE_EDIT_SELECT).eq('id', expenseId).eq('paid_by', userId).maybeSingle()
+}
+type ExpenseEditRow = QueryData<ReturnType<typeof expenseEditDataQuery>>[number]
 
 /** The current user's shares of expenses someone else paid ("Khoản nợ"), with the payer embedded. */
 function owedDebtsQuery(groupId: string, userId: string) {
@@ -96,6 +131,19 @@ function mapPaidExpense(row: PaidExpenseRow): PaidExpense {
     totalAmount: row.amount,
     amountOwedToMe: debtors.reduce((sum, d) => (d.status === 'paid' ? sum : sum + d.amount), 0),
     debtors,
+  }
+}
+
+/** Maps a raw expense row to the `ExpenseEditData` domain model, keeping every split (including the payer's own). */
+function mapExpenseEditData(row: ExpenseEditRow): ExpenseEditData {
+  return {
+    id: row.id,
+    title: row.title,
+    amount: row.amount,
+    paidBy: row.paid_by,
+    splitMethod: row.split_method,
+    splitConfig: row.split_config as unknown as SplitConfig,
+    splits: row.expense_splits.map((split) => ({ userId: split.user_id, shareAmount: split.share_amount })),
   }
 }
 
@@ -148,6 +196,13 @@ export const expenseApi = {
     return data ? mapOwedDebt(data) : null
   },
 
+  /** Fetches the full editable state of one of the current user's paid expenses, or null if it isn't theirs. */
+  async fetchExpenseEditData(expenseId: string, userId: string): Promise<ExpenseEditData | null> {
+    const { data, error } = await expenseEditDataQuery(expenseId, userId)
+    if (error) throw error
+    return data ? mapExpenseEditData(data) : null
+  },
+
   /**
    * Creates an expense and its splits atomically via the
    * `create_expense_with_splits` Postgres function.
@@ -160,6 +215,29 @@ export const expenseApi = {
 
     const { data, error } = await supabase.rpc('create_expense_with_splits', {
       p_group_id: payload.groupId,
+      p_title: payload.title,
+      p_amount: payload.amount,
+      p_paid_by: payload.paidBy,
+      p_split_method: payload.splitMethod,
+      p_split_config: payload.splitConfig as unknown as Json,
+      p_expense_splits: expenseSplits as unknown as Json,
+    })
+    if (error) throw error
+    return data
+  },
+
+  /**
+   * Updates an expense and replaces its splits atomically via the
+   * `update_expense_with_splits` Postgres function, which deletes all of the
+   * expense's existing splits and recreates them from the new breakdown
+   * rather than diffing individual rows.
+   * @returns the expense's id.
+   */
+  async updateExpenseWithSplits(payload: UpdateExpenseRequest): Promise<string> {
+    const expenseSplits = payload.splits.map((s) => ({ user_id: s.userId, share_amount: s.shareAmount }))
+
+    const { data, error } = await supabase.rpc('update_expense_with_splits', {
+      p_expense_id: payload.expenseId,
       p_title: payload.title,
       p_amount: payload.amount,
       p_paid_by: payload.paidBy,

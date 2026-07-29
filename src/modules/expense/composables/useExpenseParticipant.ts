@@ -7,9 +7,14 @@ import {
   type ExpenseParticipant,
 } from '../types/expense-participant.type'
 
-export function useExpenseParticipants(groupId: string, payerId: Ref<string>) {
+export function useExpenseParticipants(
+  groupId: string,
+  payerId: Ref<string>,
+  options?: { autoSelectCurrentUser?: boolean },
+) {
   const { data: members, query: fetchMembers } = useGroupMemberList(groupId)
   const auth = useAuthStore()
+  const autoSelectCurrentUser = options?.autoSelectCurrentUser ?? true
 
   const participants = computed<ExpenseParticipant[]>(() => members.value?.map(groupMemberToExpenseParticipant) ?? [])
   const participantsMap = computed<ExpenseParticipantMap>(() =>
@@ -26,10 +31,12 @@ export function useExpenseParticipants(groupId: string, payerId: Ref<string>) {
     }),
   )
 
+  // New expenses default to "I paid, split with myself"; editing an existing
+  // expense prefills payer/payees from its own data instead, so callers opt out.
   watch(
     () => auth.profile,
     (p) => {
-      if (!p) return
+      if (!p || !autoSelectCurrentUser) return
       payerId.value = p.id
       payeeIds.value = [p.id]
     },

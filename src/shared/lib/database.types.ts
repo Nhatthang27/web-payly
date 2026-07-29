@@ -327,6 +327,18 @@ export type Database = {
         Args: { p_evidence_image_path?: string; p_expense_split_ids: string[] }
         Returns: string[]
       }
+      update_expense_with_splits: {
+        Args: {
+          p_amount: number
+          p_expense_id: string
+          p_expense_splits: Json
+          p_paid_by: string
+          p_split_config: Json
+          p_split_method: Database["public"]["Enums"]["expense_split_method_enum"]
+          p_title: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       expense_split_method_enum: "equal" | "custom" | "percentage"

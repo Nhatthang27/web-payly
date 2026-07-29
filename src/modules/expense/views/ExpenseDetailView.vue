@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, Pencil } from 'lucide-vue-next'
 import AppHeader from '@/shared/components/app/AppHeader.vue'
 import Button from '@/shared/components/ui/Button.vue'
 import { Card, CardBody } from '@/shared/components/ui/card'
@@ -26,10 +26,17 @@ function statusConfig(status: SettlementStatus): { label: string; color: TagColo
   return status === 'paid' ? { label: 'Đã trả', color: 'success' } : { label: 'Chưa trả', color: 'default' }
 }
 
+watch(expense, () => {
+  console.log('expense', expense.value)
+})
 onMounted(() => fetchExpense())
 
 function back() {
   router.back()
+}
+
+function editExpense() {
+  router.push({ name: 'ExpenseEdit', params: { id: route.params.id, expenseId: route.params.expenseId } })
 }
 </script>
 
@@ -43,6 +50,11 @@ function back() {
       </template>
       <template #center>
         <Typography size="md" weight="semibold"> Chi tiết khoản chi </Typography>
+      </template>
+      <template #right>
+        <Button variant="ghost" size="xs" aria-label="Sửa khoản chi" @click="editExpense">
+          <Pencil :size="20" :strokeWidth="2" />
+        </Button>
       </template>
     </AppHeader>
 
